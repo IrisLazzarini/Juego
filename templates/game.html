@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Cyber Bomb - Nivel {{ level_number }}{% endblock %}
+
+{% block content %}
+<!-- HUD del juego -->
+<div class="hud">
+    <div class="hud-content">
+        <div class="hud-item">
+            <span class="hud-label">⏰ Tiempo:</span>
+            <span class="hud-value timer" id="timer">{{ time_left // 60 }}:{{ '%02d' % (time_left % 60) }}</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">🎯 Nivel:</span>
+            <span class="hud-value">{{ level_number }}/{{ total_levels }}</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">💡 Pistas:</span>
+            <span class="hud-value">{{ hints_left }}</span>
+        </div>
+        <div class="hud-item">
+            <button class="btn" id="hintBtn" onclick="requestHint()" {% if hints_left <= 0 %}disabled{% endif %} aria-label="Pedir pista">
+                💡 Pedir Pista
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="container" id="main-content">
+        <div class="text-center">
+            <h1>💣 CYBER BOMB</h1>
+            <h2>{{ level.title }}</h2>
+            
+            <!-- Mensajes de éxito/error -->
+            {% if success_message %}
+            <div class="message success" role="alert">
+                {{ success_message }}
+            </div>
+            {% endif %}
+            
+            {% if error_message %}
+            <div class="message error" role="alert">
+                {{ error_message }}
+            </div>
+            {% endif %}
+            
+            <!-- Caja de pistas -->
+            <div id="hintBox" class="message info" style="display: none;" role="alert">
+                <strong>💡 Pista:</strong> <span id="hintText"></span>
+            </div>
+            
+            <!-- Contenido del nivel -->
+            <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+                <h3>{{ level.prompt }}</h3>
+                
+                <!-- Formulario dinámico según el tipo de nivel -->
+                <form method="POST" action="{{ url_for('game') }}" style="margin-top: 2rem;">
+                    <input type="hidden" name="time_left" id="timeInput" value="{{ time_left }}">
+                    
+                    {% if level.type == "password" %}
+                    <!-- Nivel de contraseña -->
+                    <div class="form-group">
+                        <label for="password" aria-label="Ingresa la contraseña del administrador">
+                            🔓 Contraseña:
+                        </label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               required 
+                               autocomplete="off"
+                               placeholder="Ingresa la contraseña..."
+                               aria-describedby="password-help">
+                        <div id="password-help" class="sr-only">
+                            Ingresa la contraseña del administrador del sistema
+                        </div>
+                    </div>
+                    
+                    {% elif level.type == "phishing" %}
+                    <!-- Nivel de phishing -->
+                    <div class="form-group">
+                        <label aria-label="Selecciona el correo legítimo">
+                            📧 Selecciona el correo legítimo:
+                        </label>
+                        <div class="radio-group">
+                            {% for option in level.options %}
+                            <div class="radio-option">
+                                <input type="radio" 
+                                       id="option_{{ option.id }}" 
+                                       name="phishing_choice" 
+                                       value="{{ option.id }}"
+                                       required
+                                       aria-describedby="option_{{ option.id }}_desc">
+                                <label for="option_{{ option.id }}" id="option_{{ option.id }}_desc">
+                                    <strong>{{ option.id.upper() }}.</strong> {{ option.label }}
+                                    <br><small style="color: #9CA3AF;">Dominio: {{ option.domain }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    {% elif level.type == "caesar" %}
+                    <!-- Nivel de cifrado César -->
+                    <div class="form-group">
+                        <label for="caesar_answer" aria-label="Descifra el mensaje codificado">
+                            🔐 Mensaje a descifrar:
+                        </label>
+                        <div style="margin: 1rem 0; padding: 1rem; background-color: #2D3748; border-radius: 5px; font-family: monospace; font-size: 1.2rem;">
+                            {{ level.cipher }}
+                        </div>
+                        <label for="caesar_answer">
+                            📝 Tu respuesta:
+                        </label>
+                        <input type="text" 
+                               id="caesar_answer" 
+                               name="caesar_answer" 
+                               required 
+                               autocomplete="off"
+                               placeholder="Escribe el mensaje descifrado..."
+                               aria-describedby="caesar-help">
+                        <div id="caesar-help" class="sr-only">
+                            Escribe el mensaje descifrado usando el cifrado César
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" aria-label="Enviar respuesta">
+                            ✅ Enviar Respuesta
+                        </button>
+                        <a href="{{ url_for('reset') }}" class="btn btn-danger" aria-label="Reiniciar juego">
+                            🔄 Reiniciar
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Información del nivel -->
+            <div style="margin-top: 2rem; padding: 1rem; background-color: #1F2937; border-radius: 5px; border-left: 4px solid #3B82F6;">
+                <h4 style="color: #87CEEB; margin-bottom: 0.5rem;">ℹ️ Información del Nivel</h4>
+                <p style="font-size: 0.9rem; margin: 0;">
+                    <strong>Progreso:</strong> {{ level_number }} de {{ total_levels }} niveles completados<br>
+                    <strong>Tiempo restante:</strong> <span id="timeInfo">{{ time_left // 60 }}:{{ '%02d' % (time_left % 60) }}</span><br>
+                    <strong>Pistas disponibles:</strong> {{ hints_left }} (cada una resta 10 segundos)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Variables globales
+let timeLeft = {{ time_left }};
+let timerInterval;
+let isGameOver = false;
+
+// Función para formatear tiempo
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Función para actualizar el timer
+function updateTimer() {
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        isGameOver = true;
+        window.location.href = '{{ url_for("lose") }}';
+        return;
+    }
+    
+    const timerElement = document.getElementById('timer');
+    const timeInfoElement = document.getElementById('timeInfo');
+    const timeInput = document.getElementById('timeInput');
+    
+    const formattedTime = formatTime(timeLeft);
+    timerElement.textContent = formattedTime;
+    timeInfoElement.textContent = formattedTime;
+    timeInput.value = timeLeft;
+    
+    // Cambiar color cuando queden menos de 2 minutos
+    if (timeLeft <= 120) {
+        timerElement.classList.add('warning');
+    } else {
+        timerElement.classList.remove('warning');
+    }
+    
+    timeLeft--;
+}
+
+// Función para solicitar pista
+function requestHint() {
+    const hintBtn = document.getElementById('hintBtn');
+    const hintBox = document.getElementById('hintBox');
+    const hintText = document.getElementById('hintText');
+    
+    // Deshabilitar botón temporalmente
+    hintBtn.disabled = true;
+    hintBtn.textContent = '⏳ Cargando...';
+    
+    // Crear formulario para enviar solicitud
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("hint") }}';
+    
+    const timeInput = document.createElement('input');
+    timeInput.type = 'hidden';
+    timeInput.name = 'time_left';
+    timeInput.value = timeLeft;
+    
+    form.appendChild(timeInput);
+    document.body.appendChild(form);
+    
+    // Enviar solicitud
+    fetch('{{ url_for("hint") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `time_left=${timeLeft}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        hintText.textContent = data.hint;
+        hintBox.style.display = 'block';
+        
+        // Actualizar contador de pistas en el HUD
+        const hintsElement = document.querySelector('.hud-item:nth-child(3) .hud-value');
+        hintsElement.textContent = data.hints_left;
+        
+        // Deshabilitar botón si no hay más pistas
+        if (data.hints_left <= 0) {
+            hintBtn.disabled = true;
+            hintBtn.textContent = '💡 Sin Pistas';
+        } else {
+            hintBtn.disabled = false;
+            hintBtn.textContent = '💡 Pedir Pista';
+        }
+        
+        // Restar tiempo por usar pista
+        timeLeft -= 10;
+        updateTimer();
+    })
+    .catch(error => {
+        console.error('Error al solicitar pista:', error);
+        hintBtn.disabled = false;
+        hintBtn.textContent = '💡 Pedir Pista';
+    })
+    .finally(() => {
+        document.body.removeChild(form);
+    });
+}
+
+// Función para sincronizar tiempo en envío de formulario
+function syncTime() {
+    const timeInput = document.getElementById('timeInput');
+    timeInput.value = timeLeft;
+}
+
+// Inicializar timer cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Iniciar timer
+    timerInterval = setInterval(updateTimer, 1000);
+    
+    // Sincronizar tiempo en envío de formulario
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', syncTime);
+    }
+    
+    // Enfoque en el primer input
+    const firstInput = document.querySelector('input[type="text"], input[type="password"]');
+    if (firstInput) {
+        firstInput.focus();
+    }
+    
+    // Prevenir envío múltiple
+    form.addEventListener('submit', function() {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Enviando...';
+        }
+    });
+});
+
+// Prevenir pérdida de datos al cerrar/recargar
+window.addEventListener('beforeunload', function(e) {
+    if (!isGameOver) {
+        e.preventDefault();
+        e.returnValue = '¿Estás seguro de que quieres salir? Perderás el progreso del juego.';
+    }
+});
+
+// Navegación por teclado
+document.addEventListener('keydown', function(e) {
+    // Enter para enviar formulario
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        const form = document.querySelector('form');
+        if (form) {
+            e.preventDefault();
+            form.submit();
+        }
+    }
+    
+    // H para solicitar pista
+    if (e.key.toLowerCase() === 'h' && !e.target.matches('input, textarea')) {
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn && !hintBtn.disabled) {
+            e.preventDefault();
+            requestHint();
+        }
+    }
+});
+</script>
+{% endblock %}

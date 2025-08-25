@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Cyber Bomb - Inicio{% endblock %}
+
+{% block content %}
+<div class="container" id="main-content">
+    <div class="text-center">
+        <h1>💣 CYBER BOMB 💣</h1>
+        <h2>Escape Room de Ciberseguridad</h2>
+        
+        <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+            <h3>🚨 Situación Crítica</h3>
+            <p>
+                Un hacker ha plantado una <strong>bomba digital</strong> en el sistema principal de la empresa. 
+                Si no la desactivas en <strong>10 minutos</strong>, todos los datos se perderán para siempre.
+            </p>
+            
+            <p>
+                Para desactivar la bomba, necesitas resolver <strong>3 desafíos de ciberseguridad</strong>:
+            </p>
+            
+            <ul style="text-align: left; margin: 1rem 0; padding-left: 2rem;">
+                <li>🔓 <strong>Nivel 1:</strong> Descubrir la contraseña débil del administrador</li>
+                <li>🎣 <strong>Nivel 2:</strong> Identificar correos de phishing</li>
+                <li>🔐 <strong>Nivel 3:</strong> Descifrar un mensaje codificado</li>
+            </ul>
+            
+            <p>
+                <strong>¡Tienes 3 pistas disponibles!</strong> Pero cada una te costará 10 segundos de tiempo valioso.
+                Cada nivel completado te dará 30 segundos extra.
+            </p>
+            
+            <p style="color: #FFB347; font-weight: bold; margin-top: 1.5rem;">
+                ⏰ El tiempo corre... ¿Podrás salvar la empresa?
+            </p>
+        </div>
+        
+        <div class="btn-group">
+            <a href="{{ url_for('game') }}" class="btn btn-primary" aria-label="Comenzar el juego">
+                🎮 JUGAR
+            </a>
+            <a href="{{ url_for('howto') }}" class="btn" aria-label="Ver instrucciones del juego">
+                📖 CÓMO JUGAR
+            </a>
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background-color: #1F2937; border-radius: 5px; border-left: 4px solid #3B82F6;">
+            <h4 style="color: #87CEEB; margin-bottom: 0.5rem;">🎓 Objetivo Educativo</h4>
+            <p style="font-size: 0.9rem; margin: 0;">
+                Este juego te enseñará conceptos básicos de ciberseguridad de manera interactiva y divertida. 
+                Aprende sobre contraseñas seguras, detección de phishing y cifrado básico.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Cyber Bomb - Cómo Jugar{% endblock %}
+
+{% block content %}
+<div class="container" id="main-content">
+    <div class="text-center">
+        <h1>📖 CÓMO JUGAR</h1>
+        <h2>Instrucciones y Conceptos de Ciberseguridad</h2>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+        <h3>🎮 Mecánicas del Juego</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px; border-left: 4px solid #FFB347;">
+                <h4 style="color: #FFB347;">⏰ Tiempo</h4>
+                <p><strong>10 minutos iniciales</strong> para completar todos los niveles.</p>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px; border-left: 4px solid #3B82F6;">
+                <h4 style="color: #3B82F6;">💡 Pistas</h4>
+                <p><strong>3 pistas disponibles</strong>. Cada una resta 10 segundos.</p>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px; border-left: 4px solid #10B981;">
+                <h4 style="color: #10B981;">🎯 Bonificación</h4>
+                <p><strong>+30 segundos</strong> por cada nivel completado.</p>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px; border-left: 4px solid #EF4444;">
+                <h4 style="color: #EF4444;">💥 Derrota</h4>
+                <p>Si el tiempo llega a <strong>0</strong>, pierdes el juego.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+        <h3>🔓 Nivel 1: Contraseñas Débiles</h3>
+        <p>
+            <strong>Objetivo:</strong> Descubrir la contraseña del administrador del sistema.
+        </p>
+        
+        <div style="margin: 1rem 0; padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+            <h4 style="color: #87CEEB;">📚 Concepto Educativo: Contraseñas Seguras</h4>
+            <ul style="text-align: left; margin: 1rem 0; padding-left: 2rem;">
+                <li><strong>Usa combinaciones complejas:</strong> Letras, números y símbolos</li>
+                <li><strong>Evita información personal:</strong> Fechas, nombres, palabras comunes</li>
+                <li><strong>Longitud mínima:</strong> Al menos 12 caracteres</li>
+                <li><strong>Contraseñas únicas:</strong> No reutilices la misma en múltiples servicios</li>
+                <li><strong>Gestores de contraseñas:</strong> Considera usar herramientas como LastPass o 1Password</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+        <h3>🎣 Nivel 2: Detección de Phishing</h3>
+        <p>
+            <strong>Objetivo:</strong> Identificar cuál de los correos electrónicos es legítimo.
+        </p>
+        
+        <div style="margin: 1rem 0; padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+            <h4 style="color: #87CEEB;">📚 Concepto Educativo: Detección de Phishing</h4>
+            <ul style="text-align: left; margin: 1rem 0; padding-left: 2rem;">
+                <li><strong>Verifica el dominio:</strong> Revisa la URL completa del enlace</li>
+                <li><strong>Busca errores gramaticales:</strong> Los phishers suelen cometer errores</li>
+                <li><strong>Urgencia sospechosa:</strong> "Actúa ahora" o "Tiempo limitado"</li>
+                <li><strong>Remitente desconocido:</strong> Desconfía de correos de remitentes no familiares</li>
+                <li><strong>Información personal:</strong> Nunca envíes datos sensibles por correo</li>
+                <li><strong>Verifica con la fuente:</strong> Contacta directamente a la empresa</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+        <h3>🔐 Nivel 3: Cifrado César</h3>
+        <p>
+            <strong>Objetivo:</strong> Descifrar un mensaje codificado usando el cifrado César.
+        </p>
+        
+        <div style="margin: 1rem 0; padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+            <h4 style="color: #87CEEB;">📚 Concepto Educativo: Cifrado Básico</h4>
+            <ul style="text-align: left; margin: 1rem 0; padding-left: 2rem;">
+                <li><strong>Cifrado César:</strong> Método histórico que desplaza cada letra por un número fijo</li>
+                <li><strong>Seguridad limitada:</strong> Fácil de descifrar con métodos modernos</li>
+                <li><strong>Criptografía moderna:</strong> Usa algoritmos complejos como AES, RSA</li>
+                <li><strong>Claves públicas/privadas:</strong> Sistema usado en HTTPS y comunicaciones seguras</li>
+                <li><strong>Hash vs Cifrado:</strong> Los hashes son unidireccionales, el cifrado es bidireccional</li>
+            </ul>
+            
+            <div style="margin-top: 1rem; padding: 1rem; background-color: #1F2937; border-radius: 5px; border-left: 4px solid #FFB347;">
+                <h5 style="color: #FFB347;">💡 Ejemplo de Cifrado César (shift=1):</h5>
+                <p style="font-family: monospace; margin: 0.5rem 0;">
+                    A → B, B → C, C → D, ..., Z → A<br>
+                    "HOLA" → "IPMB"
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin: 2rem 0; padding: 2rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #374151;">
+        <h3>🛡️ Consejos Generales de Ciberseguridad</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+                <h4 style="color: #10B981;">🔒 Autenticación</h4>
+                <ul style="text-align: left; margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Usa autenticación de dos factores (2FA)</li>
+                    <li>Cambia contraseñas regularmente</li>
+                    <li>No compartas credenciales</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+                <h4 style="color: #3B82F6;">🌐 Navegación Segura</h4>
+                <ul style="text-align: left; margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Verifica URLs antes de hacer clic</li>
+                    <li>Usa HTTPS siempre que sea posible</li>
+                    <li>Mantén el navegador actualizado</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+                <h4 style="color: #FFB347;">💾 Protección de Datos</h4>
+                <ul style="text-align: left; margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Haz copias de seguridad regulares</li>
+                    <li>Encripta datos sensibles</li>
+                    <li>Elimina archivos de forma segura</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background-color: #2D3748; border-radius: 5px;">
+                <h4 style="color: #EF4444;">🚨 Conciencia</h4>
+                <ul style="text-align: left; margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Mantente informado sobre amenazas</li>
+                    <li>Reporta actividades sospechosas</li>
+                    <li>Educa a otros sobre seguridad</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="btn-group">
+        <a href="{{ url_for('home') }}" class="btn" aria-label="Volver al inicio">
+            🏠 VOLVER AL INICIO
+        </a>
+        <a href="{{ url_for('game') }}" class="btn btn-primary" aria-label="Comenzar el juego">
+            🎮 ¡JUGAR AHORA!
+        </a>
+    </div>
+</div>
+{% endblock %}
