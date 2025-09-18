@@ -813,7 +813,7 @@ function calculateXOR() {
     const result = document.getElementById('xorResult');
     
     if (!input) {
-        result.innerHTML = '<span style="color: #ff6b6b;">⚠️ Escribe la operación: 32^48</span>';
+        result.textContent = 'Ingresa operación XOR (ej: 32^48)';
         return;
     }
     
@@ -832,13 +832,11 @@ function calculateXOR() {
         }
         
         const xorResult = num1 ^ num2;
-        if (num1 === 32 && num2 === 48 && xorResult === 16) {
-            result.innerHTML = `<span style="color: #4CAF50;">🎉 ¡Correcto! Resultado: <strong>${xorResult}</strong><br>💡 Recuerda este número para formar el año final</span>`;
-        } else {
-            result.innerHTML = `<span style="color: #4CAF50;">✅ Resultado XOR: <strong>${xorResult}</strong><br>💡 XOR es diferente a potencia matemática</span>`;
-        }
+        result.textContent = `Resultado: ${xorResult}`;
+        result.style.color = '#10B981';
     } catch (error) {
-        result.innerHTML = '<span style="color: #ff6b6b;">❌ Error: Usa el formato 32^48 (no es potencia, es XOR)</span>';
+        result.textContent = 'Error: Formato inválido (usa: número^número)';
+        result.style.color = '#EF4444';
     }
 }
 
