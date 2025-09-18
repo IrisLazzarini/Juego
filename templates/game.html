@@ -3,6 +3,11 @@
 {% block title %}Cyber Bomb - Nivel {{ level_number }}{% endblock %}
 
 {% block content %}
+<!-- Contenedor para animación de explosión -->
+<div id="explosionContainer" class="explosion-container" style="display: none;">
+    <canvas id="explosionCanvas"></canvas>
+</div>
+
 <!-- HUD del juego -->
 <div class="hud">
     <div class="hud-content">
@@ -31,6 +36,17 @@
         <div class="text-center">
             <h1>💣 CYBER BOMB</h1>
             <h2>{{ level.title }}</h2>
+            
+            <!-- Cronómetro individual por pregunta -->
+            <div class="question-timer" style="margin: 1rem 0; padding: 1rem; background-color: #1F2937; border-radius: 10px; border: 2px solid #10B981;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                    <span style="color: #10B981; font-size: 1.1rem; font-weight: bold;">⏱️ Tiempo en esta pregunta:</span>
+                    <span id="questionTimer" style="color: #FFFFFF; font-size: 1.5rem; font-weight: bold; font-family: monospace;">00:00</span>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #9CA3AF;">
+                    Este cronómetro mide cuánto tardas en responder esta pregunta específica
+                </div>
+            </div>
             
             <!-- Mensajes de éxito/error -->
             {% if success_message %}
@@ -100,27 +116,74 @@
                         </div>
                     </div>
                     
-                    {% elif level.type == "caesar" %}
-                    <!-- Nivel de cifrado César -->
-                    <div class="form-group">
-                        <label for="caesar_answer" aria-label="Descifra el mensaje codificado">
-                            🔐 Mensaje a descifrar:
-                        </label>
-                        <div style="margin: 1rem 0; padding: 1rem; background-color: #2D3748; border-radius: 5px; font-family: monospace; font-size: 1.2rem;">
-                            {{ level.cipher }}
+                    {% elif level.type == "ransomware" %}
+                    <!-- Nivel de ransomware -->
+                    <div class="ransomware-container">
+                        <!-- Mensaje de rescate -->
+                        <div class="ransom-note">
+                            <div class="ransom-header">⚠️ SISTEMA COMPROMETIDO ⚠️</div>
+                            <pre class="ransom-text">{{ level.ransom_note }}</pre>
                         </div>
-                        <label for="caesar_answer">
-                            📝 Tu respuesta:
-                        </label>
-                        <input type="text" 
-                               id="caesar_answer" 
-                               name="caesar_answer" 
-                               required 
-                               autocomplete="off"
-                               placeholder="Escribe el mensaje descifrado..."
-                               aria-describedby="caesar-help">
-                        <div id="caesar-help" class="sr-only">
-                            Escribe el mensaje descifrado usando el cifrado César
+                        
+                        <!-- Carpeta de archivos encriptados -->
+                        <div class="encrypted-folder">
+                            <h4>📁 Archivos Encriptados</h4>
+                            <div class="file-list">
+                                {% for file in level.files %}
+                                <div class="encrypted-file" data-clue="{{ file.clue }}">
+                                    <span class="file-icon">🔒</span>
+                                    <span class="file-name">{{ file.name }}</span>
+                                    <span class="file-clue">{{ file.clue }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Mini-puzzles interactivos -->
+                        <div class="puzzle-tools">
+                            <h4>🧩 Herramientas de Análisis</h4>
+                            <p class="tool-instructions">💡 <strong>Instrucciones:</strong> Usa estas herramientas para descifrar las pistas de los archivos encriptados. ¡Cada herramienta te dará una parte de la clave final!</p>
+                            <div class="tool-grid">
+                                <div class="tool-card">
+                                    <h5>🔤 Base64 Decoder (para códigos como "QkxVRQ==")</h5>
+                                    <input type="text" id="base64Input" placeholder="Copia y pega: QkxVRQ==">
+                                    <button type="button" onclick="decodeBase64()">Decodificar</button>
+                                    <div id="base64Result" class="tool-result"></div>
+                                </div>
+                                <div class="tool-card">
+                                    <h5>🔀 Anagram Solver (para letras mezcladas como "LEBEL")</h5>
+                                    <input type="text" id="anagramInput" placeholder="Escribe: LEBEL">
+                                    <button type="button" onclick="solveAnagram()">Resolver Anagrama</button>
+                                    <div id="anagramResult" class="tool-result"></div>
+                                </div>
+                                <div class="tool-card">
+                                    <h5>⚡ XOR Calculator (para operaciones como "32^48")</h5>
+                                    <input type="text" id="xorInput" placeholder="32^48">
+                                    <button type="button" onclick="calculateXOR()">Calcular XOR</button>
+                                    <div id="xorResult" class="tool-result"></div>
+                                </div>
+                            </div>
+                            <div class="final-hint">
+                                <p>🎯 <strong>Pista Final:</strong> Combina los resultados en este orden: RESULTADO1 + RESULTADO2 + AÑO (formado por los números 52, 30, 25)</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Input para la clave final -->
+                        <div class="form-group">
+                            <label for="ransomware_key" aria-label="Ingresa la clave de desencriptación">
+                                🔑 Clave de Desencriptación:
+                            </label>
+                            <input type="text" 
+                                   id="ransomware_key" 
+                                   name="ransomware_key" 
+                                   required 
+                                   autocomplete="off"
+                                   placeholder="Ingresa la clave maestra..."
+                                   style="text-transform: uppercase;"
+                                   aria-describedby="ransomware-help">
+                            <div id="ransomware-help" class="sr-only">
+                                Ingresa la clave de desencriptación que has descubierto
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -151,11 +214,332 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Estilos para la animación de explosión */
+.explosion-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+#explosionCanvas {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+/* Respeto por prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .explosion-container {
+        animation: none !important;
+    }
+    
+    .explosion-container::before {
+        content: '💥 ¡TIEMPO AGOTADO! 💥';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        color: #EF4444;
+        font-weight: bold;
+        text-align: center;
+        z-index: 10000;
+    }
+}
+
+/* Estilos para el nivel de ransomware */
+.ransomware-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.ransom-note {
+    background: linear-gradient(135deg, #8B0000, #DC143C);
+    border: 3px solid #FF0000;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    animation: ransomPulse 2s infinite;
+}
+
+.ransom-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: #FFFF00;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 1rem;
+}
+
+.ransom-text {
+    color: #FFFFFF;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.encrypted-folder {
+    background: #1F2937;
+    border: 2px solid #374151;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.file-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.encrypted-file {
+    background: #2D3748;
+    border: 1px solid #4A5568;
+    border-radius: 5px;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.encrypted-file:hover {
+    background: #374151;
+    border-color: #6B7280;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.file-icon {
+    font-size: 1.2rem;
+    animation: lockShake 1s infinite;
+}
+
+.file-name {
+    flex: 1;
+    font-family: monospace;
+    color: #E5E7EB;
+}
+
+.file-clue {
+    background: #4B5563;
+    color: #F59E0B;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.puzzle-tools {
+    background: #1F2937;
+    border: 2px solid #10B981;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tool-card {
+    background: #2D3748;
+    border: 1px solid #4A5568;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-2px);
+    border-color: #10B981;
+}
+
+.tool-card h5 {
+    color: #10B981;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.tool-instructions {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ffd700;
+    font-size: 14px;
+}
+
+.final-hint {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    border-left: 4px solid #ffd700;
+    text-align: center;
+    font-weight: bold;
+    animation: pulse-hint 2s infinite;
+}
+
+@keyframes pulse-hint {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.tool-card input {
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    background: #374151;
+    border: 1px solid #6B7280;
+    border-radius: 4px;
+    color: #FFFFFF;
+    font-family: monospace;
+}
+
+.tool-card button {
+    background: #10B981;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+
+.tool-card button:hover {
+    background: #059669;
+}
+
+.tool-result {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #374151;
+    border-radius: 4px;
+    color: #F59E0B;
+    font-family: monospace;
+    min-height: 1.5rem;
+    border: 1px solid #6B7280;
+}
+
+/* Animaciones */
+@keyframes ransomPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
+}
+
+@keyframes lockShake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tool-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .file-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .ransom-header {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
 <script>
 // Variables globales
-let timeLeft = {{ time_left }};
+let timeLeft = parseInt({{ time_left|default(600) }}) || 600;
 let timerInterval;
 let isGameOver = false;
+
+// Variables para cronómetro individual
+let questionStartTime = Date.now();
+let questionTimerInterval;
+let questionTimeElapsed = 0;
+
+// Variables para animación de explosión
+let explosionAnimationId;
+let particles = [];
+let explosionCanvas;
+let explosionCtx;
+
+// Clase Particle para la animación de explosión
+class Particle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 15;
+        this.vy = (Math.random() - 0.5) * 15;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.01;
+        this.size = Math.random() * 8 + 3;
+        this.color = this.getRandomColor();
+        this.gravity = 0.1;
+    }
+    
+    getRandomColor() {
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+            '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+            '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#F4D03F'
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += this.gravity;
+        this.life -= this.decay;
+        this.size *= 0.98;
+    }
+    
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Efecto de brillo
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        
+        ctx.restore();
+    }
+    
+    isDead() {
+        return this.life <= 0 || this.size <= 0.5;
+    }
+}
 
 // Función para formatear tiempo
 function formatTime(seconds) {
@@ -164,22 +548,46 @@ function formatTime(seconds) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+// Función para formatear tiempo del cronómetro de pregunta (en segundos con decimales)
+function formatQuestionTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Función para iniciar cronómetro de pregunta
+function startQuestionTimer() {
+    questionStartTime = Date.now();
+    questionTimeElapsed = 0;
+    
+    questionTimerInterval = setInterval(function() {
+        questionTimeElapsed = Date.now() - questionStartTime;
+        const questionTimerElement = document.getElementById('questionTimer');
+        if (questionTimerElement) {
+            questionTimerElement.textContent = formatQuestionTime(questionTimeElapsed);
+        }
+    }, 100); // Actualizar cada 100ms para mayor precisión
+}
+
+// Función para detener cronómetro de pregunta
+function stopQuestionTimer() {
+    if (questionTimerInterval) {
+        clearInterval(questionTimerInterval);
+        questionTimerInterval = null;
+    }
+    return Math.round(questionTimeElapsed / 1000 * 100) / 100; // Retornar tiempo en segundos con 2 decimales
+}
+
 // Función para actualizar el timer
 function updateTimer() {
-    if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        isGameOver = true;
-        window.location.href = '{{ url_for("lose") }}';
-        return;
-    }
-    
     const timerElement = document.getElementById('timer');
     const timeInfoElement = document.getElementById('timeInfo');
     const timeInput = document.getElementById('timeInput');
     
     const formattedTime = formatTime(timeLeft);
     timerElement.textContent = formattedTime;
-    timeInfoElement.textContent = formattedTime;
+    if (timeInfoElement) timeInfoElement.textContent = formattedTime;
     timeInput.value = timeLeft;
     
     // Cambiar color cuando queden menos de 2 minutos
@@ -189,8 +597,307 @@ function updateTimer() {
         timerElement.classList.remove('warning');
     }
     
+    // Verificar si el tiempo se agotó ANTES de decrementar
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        isGameOver = true;
+        onTimeUp();
+        return;
+    }
+    
     timeLeft--;
 }
+
+// Función que se ejecuta cuando el tiempo se agota
+function onTimeUp() {
+    console.log('onTimeUp() ejecutada - iniciando animación de explosión');
+    
+    // Verificar si las animaciones están deshabilitadas
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        console.log('Animaciones reducidas detectadas - mostrando mensaje simple');
+        // Mostrar mensaje simple y redirigir después de un breve delay
+        const container = document.getElementById('explosionContainer');
+        if (container) {
+            container.style.display = 'flex';
+            console.log('Contenedor de explosión mostrado (modo reducido)');
+        } else {
+            console.error('No se encontró el contenedor de explosión');
+        }
+        setTimeout(() => {
+            window.location.href = '{{ url_for("lose") }}';
+        }, 2000);
+        return;
+    }
+    
+    console.log('Iniciando animación completa de explosión');
+    
+    // Inicializar canvas para la animación
+    if (!initExplosionCanvas()) {
+        console.error('Error al inicializar canvas, abortando animación');
+        setTimeout(() => {
+            window.location.href = '{{ url_for("lose") }}';
+        }, 1000);
+        return;
+    }
+    
+    // Mostrar contenedor de explosión
+    const container = document.getElementById('explosionContainer');
+    if (container) {
+        container.style.display = 'flex';
+        console.log('Contenedor de explosión mostrado');
+    } else {
+        console.error('No se encontró el contenedor de explosión');
+        return;
+    }
+    
+    // Crear múltiples explosiones
+    createExplosion();
+    
+    // Iniciar animación
+    animateExplosion();
+    
+    // Redirigir después de la animación (3 segundos)
+    setTimeout(() => {
+        console.log('Finalizando animación y redirigiendo');
+        stopExplosionAnimation();
+        window.location.href = '{{ url_for("lose") }}';
+    }, 3000);
+}
+
+// Inicializar canvas para la explosión
+function initExplosionCanvas() {
+    console.log('Inicializando canvas de explosión');
+    explosionCanvas = document.getElementById('explosionCanvas');
+    
+    if (!explosionCanvas) {
+        console.error('No se encontró el canvas de explosión');
+        return false;
+    }
+    
+    explosionCtx = explosionCanvas.getContext('2d');
+    
+    if (!explosionCtx) {
+        console.error('No se pudo obtener el contexto 2D del canvas');
+        return false;
+    }
+    
+    // Ajustar tamaño del canvas
+    explosionCanvas.width = window.innerWidth;
+    explosionCanvas.height = window.innerHeight;
+    console.log(`Canvas inicializado: ${explosionCanvas.width}x${explosionCanvas.height}`);
+    
+    // Limpiar partículas anteriores
+    particles = [];
+    console.log('Canvas de explosión inicializado correctamente');
+    return true;
+}
+
+// Crear explosión con partículas
+function createExplosion() {
+    const centerX = explosionCanvas.width / 2;
+    const centerY = explosionCanvas.height / 2;
+    console.log(`Creando explosión en centro: ${centerX}, ${centerY}`);
+    
+    // Crear múltiples ondas de partículas
+    for (let wave = 0; wave < 3; wave++) {
+        setTimeout(() => {
+            console.log(`Creando onda ${wave + 1} de partículas`);
+            // Crear partículas en círculo
+            for (let i = 0; i < 80; i++) {
+                particles.push(new Particle(centerX, centerY));
+            }
+            
+            // Crear partículas adicionales aleatorias
+            for (let i = 0; i < 40; i++) {
+                const offsetX = (Math.random() - 0.5) * 100;
+                const offsetY = (Math.random() - 0.5) * 100;
+                particles.push(new Particle(centerX + offsetX, centerY + offsetY));
+            }
+            console.log(`Total de partículas después de onda ${wave + 1}: ${particles.length}`);
+        }, wave * 300);
+    }
+}
+
+// Animar la explosión
+function animateExplosion() {
+    if (!explosionCtx || !explosionCanvas) {
+        console.error('Canvas o contexto no disponible para animación');
+        return;
+    }
+    
+    explosionCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    explosionCtx.fillRect(0, 0, explosionCanvas.width, explosionCanvas.height);
+    
+    // Actualizar y dibujar partículas
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+        particle.update();
+        particle.draw(explosionCtx);
+        
+        // Remover partículas muertas
+        if (particle.isDead()) {
+            particles.splice(i, 1);
+        }
+    }
+    
+    // Continuar animación si hay partículas
+    if (particles.length > 0) {
+        explosionAnimationId = requestAnimationFrame(animateExplosion);
+    } else {
+        console.log('Animación de explosión completada - no quedan partículas');
+    }
+}
+
+// Detener animación de explosión
+function stopExplosionAnimation() {
+    if (explosionAnimationId) {
+        cancelAnimationFrame(explosionAnimationId);
+        explosionAnimationId = null;
+    }
+    particles = [];
+}
+
+// Función de prueba para activar la explosión manualmente (solo para depuración)
+function testExplosion() {
+    console.log('Prueba de explosión activada manualmente');
+    onTimeUp();
+}
+
+// Agregar función de prueba al objeto window para acceso desde consola
+window.testExplosion = testExplosion;
+
+// Funciones para mini-puzzles del nivel de ransomware
+function decodeBase64() {
+    const input = document.getElementById('base64Input').value.trim();
+    const result = document.getElementById('base64Result');
+    
+    if (!input) {
+        result.innerHTML = '<span style="color: #ff6b6b;">⚠️ Copia y pega el código: QkxVRQ==</span>';
+        return;
+    }
+    
+    try {
+        const decoded = atob(input);
+        if (decoded === 'BLUE') {
+            result.innerHTML = `<span style="color: #4CAF50;">🎉 ¡Perfecto! Resultado: <strong>${decoded}</strong><br>💡 Esta es la primera parte de la clave</span>`;
+        } else {
+            result.innerHTML = `<span style="color: #4CAF50;">✅ Resultado: <strong>${decoded}</strong></span>`;
+        }
+    } catch (error) {
+        result.innerHTML = '<span style="color: #ff6b6b;">❌ Código Base64 inválido. Intenta con: QkxVRQ==</span>';
+    }
+}
+
+function solveAnagram() {
+    const input = document.getElementById('anagramInput').value.trim().toUpperCase();
+    const result = document.getElementById('anagramResult');
+    
+    if (!input) {
+        result.innerHTML = '<span style="color: #ff6b6b;">⚠️ Escribe las letras: LEBEL</span>';
+        return;
+    }
+    
+    // Verificar si las letras forman "BELL"
+    const sortedInput = input.split('').sort().join('');
+    const targetSorted = 'BELL'.split('').sort().join('');
+    
+    if (sortedInput === targetSorted) {
+        result.innerHTML = '<span style="color: #4CAF50;">🎉 ¡Excelente! Resultado: <strong>BELL</strong><br>💡 Esta es la segunda parte de la clave</span>';
+    } else {
+        result.innerHTML = `<span style="color: #F59E0B;">🤔 Letras ordenadas: ${sortedInput}<br>💡 Pista: Piensa en una campana en inglés</span>`;
+    }
+}
+
+function calculateXOR() {
+    const input = document.getElementById('xorInput').value.trim();
+    const result = document.getElementById('xorResult');
+    
+    if (!input) {
+        result.innerHTML = '<span style="color: #ff6b6b;">⚠️ Escribe la operación: 32^48</span>';
+        return;
+    }
+    
+    try {
+        // Parsear la operación XOR
+        const parts = input.split('^');
+        if (parts.length !== 2) {
+            throw new Error('Formato inválido');
+        }
+        
+        const num1 = parseInt(parts[0].trim());
+        const num2 = parseInt(parts[1].trim());
+        
+        if (isNaN(num1) || isNaN(num2)) {
+            throw new Error('Números inválidos');
+        }
+        
+        const xorResult = num1 ^ num2;
+        if (num1 === 32 && num2 === 48 && xorResult === 16) {
+            result.innerHTML = `<span style="color: #4CAF50;">🎉 ¡Correcto! Resultado: <strong>${xorResult}</strong><br>💡 Recuerda este número para formar el año final</span>`;
+        } else {
+            result.innerHTML = `<span style="color: #4CAF50;">✅ Resultado XOR: <strong>${xorResult}</strong><br>💡 XOR es diferente a potencia matemática</span>`;
+        }
+    } catch (error) {
+        result.innerHTML = '<span style="color: #ff6b6b;">❌ Error: Usa el formato 32^48 (no es potencia, es XOR)</span>';
+    }
+}
+
+// Función para agregar efectos visuales a los archivos encriptados
+function initRansomwareEffects() {
+    const encryptedFiles = document.querySelectorAll('.encrypted-file');
+    
+    encryptedFiles.forEach(file => {
+        file.addEventListener('click', function() {
+            // Efecto de "glitch" al hacer clic
+            this.style.animation = 'none';
+            this.style.transform = 'scale(1.05)';
+            this.style.filter = 'hue-rotate(180deg)';
+            
+            setTimeout(() => {
+                this.style.transform = '';
+                this.style.filter = '';
+            }, 200);
+            
+            // Mostrar pista destacada
+            const clue = this.querySelector('.file-clue');
+            clue.style.animation = 'ransomPulse 1s ease-in-out 3';
+        });
+    });
+}
+
+// Función para simular efecto de "desencriptación" cuando se ingresa la clave correcta
+function simulateDecryption() {
+    const files = document.querySelectorAll('.encrypted-file');
+    let delay = 0;
+    
+    files.forEach(file => {
+        setTimeout(() => {
+            const icon = file.querySelector('.file-icon');
+            const name = file.querySelector('.file-name');
+            
+            // Cambiar icono y nombre
+            icon.textContent = '✅';
+            name.textContent = name.textContent.replace('.locked', '');
+            name.style.color = '#10B981';
+            
+            // Efecto visual
+            file.style.background = 'linear-gradient(90deg, #2D3748, #10B981, #2D3748)';
+            file.style.backgroundSize = '200% 100%';
+            file.style.animation = 'shimmer 1s ease-in-out';
+        }, delay);
+        delay += 200;
+    });
+}
+
+// Agregar animación shimmer para el efecto de desencriptación
+const shimmerStyle = document.createElement('style');
+shimmerStyle.textContent = `
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+`;
+document.head.appendChild(shimmerStyle);
 
 // Función para solicitar pista
 function requestHint() {
@@ -259,12 +966,35 @@ function requestHint() {
 function syncTime() {
     const timeInput = document.getElementById('timeInput');
     timeInput.value = timeLeft;
+    
+    // Capturar tiempo de respuesta individual
+    const questionTime = stopQuestionTimer();
+    
+    // Agregar campo oculto con el tiempo de respuesta individual
+    const form = document.querySelector('form');
+    if (form) {
+        // Remover campo anterior si existe
+        const existingInput = form.querySelector('input[name="question_response_time"]');
+        if (existingInput) {
+            existingInput.remove();
+        }
+        
+        // Agregar nuevo campo con el tiempo
+        const questionTimeInput = document.createElement('input');
+        questionTimeInput.type = 'hidden';
+        questionTimeInput.name = 'question_response_time';
+        questionTimeInput.value = questionTime;
+        form.appendChild(questionTimeInput);
+    }
 }
 
 // Inicializar timer cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
-    // Iniciar timer
+    // Iniciar timer principal
     timerInterval = setInterval(updateTimer, 1000);
+    
+    // Iniciar cronómetro de pregunta
+    startQuestionTimer();
     
     // Sincronizar tiempo en envío de formulario
     const form = document.querySelector('form');
@@ -279,13 +1009,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Prevenir envío múltiple
-    form.addEventListener('submit', function() {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Enviando...';
-        }
-    });
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Enviando...';
+            }
+        });
+    }
+    
+    // Inicializar efectos del ransomware si estamos en ese nivel
+    if (document.querySelector('.ransomware-container')) {
+        initRansomwareEffects();
+    }
+});
+
+// Limpiar intervalos al salir de la página
+window.addEventListener('beforeunload', function() {
+    if (questionTimerInterval) {
+        clearInterval(questionTimerInterval);
+    }
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    stopExplosionAnimation();
+});
+
+// Manejar redimensionamiento para mantener la animación responsive
+window.addEventListener('resize', function() {
+    if (explosionCanvas && explosionCtx) {
+        explosionCanvas.width = window.innerWidth;
+        explosionCanvas.height = window.innerHeight;
+    }
 });
 
 // Prevenir pérdida de datos al cerrar/recargar

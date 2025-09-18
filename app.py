@@ -3,10 +3,11 @@ Escape Room de Ciberseguridad - Cyber Bomb
 Aplicación principal Flask
 """
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from utils.crypto import decrypt_caesar
 import secrets
 import re
+import time
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -38,12 +39,20 @@ LEVELS = [
         "hint": "Observa el dominio real del enlace."
     },
     {
-        "type": "caesar",
-        "title": "Cifrado César",
-        "prompt": "Descifra el mensaje: Uifsf jt op tqppo",
-        "cipher": "Uifsf jt op tqppo",
-        "solution": "There is no spoon",
-        "hint": "César sabía contar hasta 1."
+        "type": "ransomware",
+        "title": "Explosión Ransomware — 'La llave perdida'",
+        "prompt": "Recupera la clave de desencriptación antes de que se acabe el tiempo",
+        "solution": "BLUEBELL2025",
+        "hint": "PISTAS IMPORTANTES:\n1. Usa el decodificador Base64 con \"QkxVRQ==\"\n2. Resuelve el anagrama \"LEBEL\"\n3. Calcula 32 XOR 48 (no 32 elevado a 48)\n4. Los números 52, 30, 25 forman un año\n5. La clave final es: PALABRA1 + PALABRA2 + AÑO (todo junto, sin espacios)",
+        "files": [
+            {"name": "documento.txt.locked", "clue": "QkxVRQ== (Pista: Esto parece Base64, ¡decodifícalo!)"},
+            {"name": "imagen.jpg.locked", "clue": "LEBEL (Pista: Las letras están mezcladas, ¡ordénalas!)"},
+            {"name": "video.mp4.locked", "clue": "32^48 (Pista: Usa XOR, no potencia matemática)"},
+            {"name": "backup.zip.locked", "clue": "52 (Pista: Parte del año final)"},
+            {"name": "config.ini.locked", "clue": "30 (Pista: También parte del año)"},
+            {"name": "data.db.locked", "clue": "25 (Pista: Completa el año 20_)"}
+        ],
+        "ransom_note": "🔒 TUS ARCHIVOS HAN SIDO ENCRIPTADOS 🔒\n\nPara recuperar tus archivos, necesitas la clave maestra.\nLas pistas están ocultas en los nombres y metadatos.\n\n💡 Pista: Los números al final no son casualidad..."
     }
 ]
 
@@ -58,6 +67,12 @@ def init_session():
         session["hints_left"] = INITIAL_HINTS
     if "status" not in session:
         session["status"] = "playing"
+    if "performance_data" not in session:
+        session["performance_data"] = []
+    if "question_start_time" not in session:
+        session["question_start_time"] = time.time()
+    if "individual_times" not in session:
+        session["individual_times"] = []  # Lista para almacenar tiempos individuales
 
 
 def validate_time():
@@ -74,6 +89,42 @@ def get_current_level():
     if level_index < len(LEVELS):
         return LEVELS[level_index]
     return None
+
+
+def registrar_respuesta(pregunta_id, texto_pregunta, es_correcta, tiempo_individual=None):
+    """Registra el rendimiento de una respuesta del jugador"""
+    tiempo_actual = time.time()
+    tiempo_respuesta = tiempo_actual - session.get("question_start_time", tiempo_actual)
+    
+    # Usar el tiempo individual del frontend si está disponible
+    if tiempo_individual is not None:
+        tiempo_respuesta = float(tiempo_individual)
+    
+    datos_pregunta = {
+        "id_pregunta": pregunta_id,
+        "texto_pregunta": texto_pregunta,
+        "tiempo_respuesta": round(tiempo_respuesta, 2),
+        "es_respuesta_correcta": es_correcta
+    }
+    
+    if "performance_data" not in session:
+        session["performance_data"] = []
+    
+    if "individual_times" not in session:
+        session["individual_times"] = []
+    
+    session["performance_data"].append(datos_pregunta)
+    
+    # Registrar tiempo individual con información de la pregunta
+    tiempo_info = {
+        "pregunta_numero": pregunta_id,
+        "titulo_pregunta": texto_pregunta,
+        "tiempo_segundos": round(tiempo_respuesta, 2),
+        "es_correcta": es_correcta
+    }
+    session["individual_times"].append(tiempo_info)
+    
+    session["question_start_time"] = tiempo_actual  # Reiniciar para la siguiente pregunta
 
 
 @app.route('/')
@@ -122,40 +173,58 @@ def game():
         if not validate_time():
             return redirect(url_for('lose'))
         
+        # Capturar tiempo individual de respuesta del frontend
+        tiempo_individual = request.form.get('question_response_time')
+        
         # Procesar respuesta según el tipo de nivel
         if current_level["type"] == "password":
             answer = request.form.get('password', '').strip()
             if answer == current_level["solution"]:
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
-                success_message = "¡Contraseña correcta! +30 segundos"
+                # Verificar si completó todos los niveles
+                if session["level"] >= len(LEVELS):
+                    session["status"] = "won"
+                    return redirect(url_for('win'))
+                # Redirigir para mostrar el siguiente nivel
+                return redirect(url_for('game'))
             else:
                 error_message = "Contraseña incorrecta. Intenta de nuevo."
         
         elif current_level["type"] == "phishing":
             answer = request.form.get('phishing_choice', '')
             correct_option = next((opt for opt in current_level["options"] if opt["is_correct"]), None)
+            es_correcta = answer == correct_option["id"]
+            registrar_respuesta(session["level"] + 1, current_level["prompt"], es_correcta, tiempo_individual)
             
-            if answer == correct_option["id"]:
+            if es_correcta:
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
-                success_message = "¡Correcto! Has identificado el phishing. +30 segundos"
+                # Verificar si completó todos los niveles
+                if session["level"] >= len(LEVELS):
+                    session["status"] = "won"
+                    return redirect(url_for('win'))
+                # Redirigir para mostrar el siguiente nivel
+                return redirect(url_for('game'))
             else:
                 error_message = "Incorrecto. Revisa los dominios de los enlaces."
         
-        elif current_level["type"] == "caesar":
-            answer = request.form.get('caesar_answer', '').strip()
-            if answer.lower() == current_level["solution"].lower():
+        elif current_level["type"] == "ransomware":
+            answer = request.form.get('ransomware_key', '').strip().upper()
+            es_correcta = answer == current_level["solution"]
+            registrar_respuesta(session["level"] + 1, current_level["prompt"], es_correcta, tiempo_individual)
+            
+            if es_correcta:
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
-                success_message = "¡Mensaje descifrado correctamente! +30 segundos"
+                # Verificar si completó todos los niveles
+                if session["level"] >= len(LEVELS):
+                    session["status"] = "won"
+                    return redirect(url_for('win'))
+                # Redirigir para mostrar el siguiente nivel
+                return redirect(url_for('game'))
             else:
-                error_message = "Descifrado incorrecto. Intenta de nuevo."
-        
-        # Verificar si completó todos los niveles
-        if session["level"] >= len(LEVELS):
-            session["status"] = "won"
-            return redirect(url_for('win'))
+                error_message = "Clave de desencriptación incorrecta. Analiza las pistas más cuidadosamente."
     
     return render_template('game.html', 
                          level=current_level, 
@@ -186,9 +255,9 @@ def hint():
         
         current_level = get_current_level()
         if current_level:
-            return {"hint": current_level["hint"], "hints_left": session["hints_left"]}
+            return jsonify({"hint": current_level["hint"], "hints_left": session["hints_left"]})
     
-    return {"hint": "No tienes más pistas disponibles.", "hints_left": session["hints_left"]}
+    return jsonify({"hint": "No tienes más pistas disponibles.", "hints_left": session["hints_left"]})
 
 
 @app.route('/reset')
@@ -200,18 +269,36 @@ def reset():
 
 @app.route('/win')
 def win():
-    """Pantalla de victoria"""
+    """Página de victoria"""
     if session.get("status") != "won":
         return redirect(url_for('home'))
     
-    final_time = session.get("time_left", 0)
-    minutes = final_time // 60
-    seconds = final_time % 60
+    # Calcular estadísticas finales
+    tiempo_total = INITIAL_TIME - session.get("time_left", 0)
+    performance_data = session.get("performance_data", [])
+    individual_times = session.get("individual_times", [])
     
-    return render_template('win.html', 
-                         final_time=final_time,
-                         minutes=minutes,
-                         seconds=seconds)
+    # Calcular estadísticas de rendimiento
+    total_preguntas = len(performance_data)
+    respuestas_correctas = sum(1 for p in performance_data if p["es_respuesta_correcta"])
+    tiempo_promedio = sum(p["tiempo_respuesta"] for p in performance_data) / total_preguntas if total_preguntas > 0 else 0
+    
+    # Calcular estadísticas de tiempos individuales
+    tiempo_total_individual = sum(t["tiempo_segundos"] for t in individual_times)
+    tiempo_promedio_individual = tiempo_total_individual / len(individual_times) if individual_times else 0
+    
+    stats = {
+        "tiempo_total": tiempo_total,
+        "total_preguntas": total_preguntas,
+        "respuestas_correctas": respuestas_correctas,
+        "tiempo_promedio": round(tiempo_promedio, 2),
+        "performance_data": performance_data,
+        "individual_times": individual_times,
+        "tiempo_total_individual": round(tiempo_total_individual, 2),
+        "tiempo_promedio_individual": round(tiempo_promedio_individual, 2)
+    }
+    
+    return render_template('win.html', stats=stats)
 
 
 @app.route('/lose')

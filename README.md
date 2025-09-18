@@ -81,11 +81,21 @@ Desactivar la "bomba digital" resolviendo 3 niveles de ciberseguridad antes de q
 - **Concepto**: Verificar dominios y URLs sospechosas
 - **Pista**: Observa el dominio real del enlace
 
-#### Nivel 3: Cifrado César
-- **Objetivo**: Descifrar el mensaje codificado
-- **Mensaje**: `Uifsf jt op tqppo`
-- **Solución**: `There is no spoon`
-- **Concepto**: Cifrado por desplazamiento de caracteres
+#### Nivel 3: Explosión Ransomware — "La llave perdida" 🔒
+- **Objetivo**: Recuperar la clave de desencriptación BLUEBELL2025 antes de que se acabe el tiempo
+- **Mecánica**: Los archivos han sido encriptados por ransomware. El jugador debe usar herramientas de análisis para descifrar pistas y reconstruir la clave maestra
+- **Herramientas disponibles**: 
+  - 🔤 **Base64 Decoder**: Para decodificar "QkxVRQ==" → "BLUE"
+  - 🔀 **Anagram Solver**: Para resolver "LEBEL" → "BELL" 
+  - ⚡ **XOR Calculator**: Para calcular 32^48 → 16
+- **Solución**: BLUEBELL2025 (BLUE + BELL + 2025, donde 2025 se forma con los números 52, 30, 25)
+- **Concepto**: Enseña sobre análisis forense digital, criptografía básica y recuperación de datos
+- **Pistas mejoradas**: Incluye instrucciones paso a paso y retroalimentación educativa para estudiantes de secundaria
+- **Características educativas**:
+  - Pistas claras con ejemplos específicos
+  - Retroalimentación inmediata en cada herramienta
+  - Explicaciones sobre la diferencia entre XOR y potencia matemática
+  - Interfaz visual atractiva con animaciones y efectos
 
 ### Estrategias
 - Usa las pistas estratégicamente cuando estés atascado
