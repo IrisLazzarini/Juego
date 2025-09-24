@@ -14,9 +14,10 @@ app.secret_key = secrets.token_hex(32)
 
 # Configuración del juego
 INITIAL_TIME = 600  # 10 minutos en segundos
-INITIAL_HINTS = 3
+INITIAL_HINTS = 8  # Más pistas iniciales
 TIME_BONUS = 30  # segundos por nivel completado
-HINT_PENALTY = 10  # segundos por pista usada
+HINT_PENALTY = 8  # menos penalización por pista (era 10)
+HINT_BONUS = 2  # pistas adicionales por nivel completado
 
 # Definición de niveles
 LEVELS = [
@@ -25,7 +26,38 @@ LEVELS = [
         "title": "Contraseña Débil",
         "prompt": "Ingresa la contraseña del administrador del sistema.",
         "solution": "1234",
-        "hint": "El admin nunca cambia su clave… empieza con 1."
+        "hint": "El admin nunca cambia su clave… empieza con 1.",
+        "success_message": "¡Excelente! Has aprendido sobre contraseñas débiles. 💡 TIP: Las contraseñas como '1234', 'password' o 'admin' son extremadamente vulnerables. Siempre usa contraseñas complejas con mayúsculas, minúsculas, números y símbolos.",
+        "additional_hints": [
+            "Es una secuencia numérica muy simple",
+            "Piensa en los números más básicos",
+            "Es una contraseña de 4 dígitos",
+            "Los administradores perezosos usan contraseñas obvias",
+            "Empieza con 1 y sigue con 2, 3, 4...",
+            "Es la secuencia más básica que existe",
+            "Los números van en orden ascendente",
+            "¡Es tan simple que un niño la adivinaría!"
+        ]
+    },
+    {
+        "type": "caesar",
+        "title": "Cifrado César",
+        "prompt": "Descifra el mensaje encriptado usando el cifrado César. El mensaje fue cifrado con un desplazamiento de 3 posiciones hacia adelante en el alfabeto.",
+        "encrypted_message": "WKH VHFUHW SDVVZRUG LV FLEHUVHFXULGDG",
+        "solution": "THE SECRET PASSWORD IS CYBERSECURITY",
+        "hint": "El cifrado César desplaza cada letra 3 posiciones hacia atrás en el alfabeto. A=D, B=E, C=F, etc. Para descifrar, mueve cada letra 3 posiciones hacia atrás.",
+        "success_message": "¡Fantástico! Has dominado el cifrado César. 🔐 TIP: El cifrado César es uno de los métodos más antiguos de encriptación. Aunque es fácil de romper con análisis de frecuencia, fue usado por Julio César para comunicaciones militares. Los métodos modernos como AES son mucho más seguros.",
+        "additional_hints": [
+            "Usa la herramienta de descifrado con desplazamiento 3",
+            "El mensaje contiene la palabra 'SECRET'",
+            "La respuesta final es sobre ciberseguridad",
+            "Cada letra se mueve 3 posiciones hacia atrás en el alfabeto",
+            "W se convierte en T, K se convierte en H, H se convierte en E",
+            "El mensaje descifrado habla de una contraseña secreta",
+            "La palabra final es 'CYBERSECURITY'",
+            "Usa el botón 'Descifrar' en la herramienta",
+            "El resultado debe ser: THE SECRET PASSWORD IS CYBERSECURITY"
+        ]
     },
     {
         "type": "phishing",
@@ -36,7 +68,20 @@ LEVELS = [
             {"id": "b", "label": "Promos: http://free-iphone.me", "is_correct": False, "domain": "free-iphone.me"},
             {"id": "c", "label": "Banco oficial: https://banco.com/seguridad", "is_correct": True, "domain": "banco.com"}
         ],
-        "hint": "Observa el dominio real del enlace."
+        "hint": "Observa el dominio real del enlace.",
+        "success_message": "¡Perfecto! Has identificado correctamente el correo legítimo. 🛡️ TIP: Los ataques de phishing son muy comunes. Siempre verifica la URL completa, busca certificados SSL válidos, y nunca hagas clic en enlaces sospechosos. Los bancos nunca te pedirán datos por email.",
+        "additional_hints": [
+            "Los dominios legítimos suelen ser simples y reconocibles",
+            "Evita dominios con guiones o extensiones extrañas",
+            "El banco oficial tendría un dominio .com limpio",
+            "Los atacantes usan dominios similares pero no idénticos",
+            "banco-login.co tiene un guión sospechoso",
+            "free-iphone.me suena demasiado bueno para ser verdad",
+            "banco.com es el dominio más limpio y profesional",
+            "Los bancos reales usan dominios cortos y memorables",
+            "La opción C es la única con HTTPS y dominio limpio",
+            "Los phishers copian nombres pero cambian extensiones"
+        ]
     },
     {
         "type": "ransomware",
@@ -44,6 +89,21 @@ LEVELS = [
         "prompt": "Recupera la clave de desencriptación antes de que se acabe el tiempo",
         "solution": "BLUEBELL2025",
         "hint": "PISTAS IMPORTANTES:\n1. Usa el decodificador Base64 con \"QkxVRQ==\"\n2. Resuelve el anagrama \"LEBEL\"\n3. Calcula 32 XOR 48 (no 32 elevado a 48)\n4. Los números 52, 30, 25 forman un año\n5. La clave final es: PALABRA1 + PALABRA2 + AÑO (todo junto, sin espacios)",
+        "success_message": "¡Increíble! Has resuelto el ransomware y recuperado los archivos. 🎉 TIP: Los ransomware son una amenaza real. Siempre mantén copias de seguridad actualizadas, no abras archivos sospechosos, y mantén tu software actualizado. La prevención es la mejor defensa contra estos ataques.",
+        "additional_hints": [
+            "Base64 'QkxVRQ==' se decodifica como 'BLUE'",
+            "LEBEL es un anagrama de 'BELL'",
+            "32 XOR 48 = 16 (usa la operación XOR)",
+            "Los números 52, 30, 25 forman el año 2025",
+            "Combina: BLUE + BELL + 2025 = BLUEBELL2025",
+            "Usa la herramienta Base64 Decoder con QkxVRQ==",
+            "Resuelve el anagrama LEBEL para obtener BELL",
+            "Calcula 32 XOR 48 usando la herramienta XOR Calculator",
+            "Los números 52, 30, 25 forman 2025 (año actual)",
+            "La clave final es BLUEBELL2025 (todo junto)",
+            "No uses espacios en la respuesta final",
+            "La clave tiene 13 caracteres en total"
+        ],
         "files": [
             {"name": "documento.txt.locked", "clue": "QkxVRQ== (Pista: Esto parece Base64, ¡decodifícalo!)"},
             {"name": "imagen.jpg.locked", "clue": "LEBEL (Pista: Las letras están mezcladas, ¡ordénalas!)"},
@@ -73,6 +133,8 @@ def init_session():
         session["question_start_time"] = time.time()
     if "individual_times" not in session:
         session["individual_times"] = []  # Lista para almacenar tiempos individuales
+    if "hint_count" not in session:
+        session["hint_count"] = 0  # Contador de pistas usadas en el nivel actual
 
 
 def validate_time():
@@ -180,8 +242,12 @@ def game():
         if current_level["type"] == "password":
             answer = request.form.get('password', '').strip()
             if answer == current_level["solution"]:
+                # Guardar mensaje de éxito
+                session["success_message"] = current_level.get("success_message", "¡Excelente! Has completado el nivel.")
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
+                session["hints_left"] += HINT_BONUS  # Otorgar pistas adicionales
+                session["hint_count"] = 0  # Reiniciar contador de pistas para el nuevo nivel
                 # Verificar si completó todos los niveles
                 if session["level"] >= len(LEVELS):
                     session["status"] = "won"
@@ -191,6 +257,27 @@ def game():
             else:
                 error_message = "Contraseña incorrecta. Intenta de nuevo."
         
+        elif current_level["type"] == "caesar":
+            answer = request.form.get('caesar_answer', '').strip().upper()
+            es_correcta = answer == current_level["solution"]
+            registrar_respuesta(session["level"] + 1, current_level["prompt"], es_correcta, tiempo_individual)
+            
+            if es_correcta:
+                # Guardar mensaje de éxito
+                session["success_message"] = current_level.get("success_message", "¡Excelente! Has completado el nivel.")
+                session["level"] += 1
+                session["time_left"] += TIME_BONUS
+                session["hints_left"] += HINT_BONUS  # Otorgar pistas adicionales
+                session["hint_count"] = 0  # Reiniciar contador de pistas para el nuevo nivel
+                # Verificar si completó todos los niveles
+                if session["level"] >= len(LEVELS):
+                    session["status"] = "won"
+                    return redirect(url_for('win'))
+                # Redirigir para mostrar el siguiente nivel
+                return redirect(url_for('game'))
+            else:
+                error_message = "Mensaje descifrado incorrecto. Revisa tu cifrado César."
+        
         elif current_level["type"] == "phishing":
             answer = request.form.get('phishing_choice', '')
             correct_option = next((opt for opt in current_level["options"] if opt["is_correct"]), None)
@@ -198,8 +285,12 @@ def game():
             registrar_respuesta(session["level"] + 1, current_level["prompt"], es_correcta, tiempo_individual)
             
             if es_correcta:
+                # Guardar mensaje de éxito
+                session["success_message"] = current_level.get("success_message", "¡Excelente! Has completado el nivel.")
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
+                session["hints_left"] += HINT_BONUS  # Otorgar pistas adicionales
+                session["hint_count"] = 0  # Reiniciar contador de pistas para el nuevo nivel
                 # Verificar si completó todos los niveles
                 if session["level"] >= len(LEVELS):
                     session["status"] = "won"
@@ -215,8 +306,12 @@ def game():
             registrar_respuesta(session["level"] + 1, current_level["prompt"], es_correcta, tiempo_individual)
             
             if es_correcta:
+                # Guardar mensaje de éxito
+                session["success_message"] = current_level.get("success_message", "¡Excelente! Has completado el nivel.")
                 session["level"] += 1
                 session["time_left"] += TIME_BONUS
+                session["hints_left"] += HINT_BONUS  # Otorgar pistas adicionales
+                session["hint_count"] = 0  # Reiniciar contador de pistas para el nuevo nivel
                 # Verificar si completó todos los niveles
                 if session["level"] >= len(LEVELS):
                     session["status"] = "won"
@@ -225,6 +320,11 @@ def game():
                 return redirect(url_for('game'))
             else:
                 error_message = "Clave de desencriptación incorrecta. Analiza las pistas más cuidadosamente."
+    
+    # Obtener mensaje de éxito de la sesión si existe
+    session_success_message = session.pop("success_message", None)
+    if session_success_message:
+        success_message = session_success_message
     
     return render_template('game.html', 
                          level=current_level, 
@@ -255,7 +355,26 @@ def hint():
         
         current_level = get_current_level()
         if current_level:
-            return jsonify({"hint": current_level["hint"], "hints_left": session["hints_left"]})
+            # Sistema de pistas progresivas
+            hint_count = session.get("hint_count", 0)
+            hint_count += 1
+            session["hint_count"] = hint_count
+            
+            # Primera pista: pista principal
+            if hint_count == 1:
+                hint_text = current_level["hint"]
+            # Pistas adicionales si están disponibles
+            elif "additional_hints" in current_level and hint_count <= len(current_level["additional_hints"]) + 1:
+                hint_text = current_level["additional_hints"][hint_count - 2]
+            else:
+                hint_text = "No hay más pistas específicas para este nivel. ¡Usa tu ingenio!"
+            
+            return jsonify({
+                "hint": hint_text, 
+                "hints_left": session["hints_left"],
+                "hint_number": hint_count,
+                "total_hints": len(current_level.get("additional_hints", [])) + 1
+            })
     
     return jsonify({"hint": "No tienes más pistas disponibles.", "hints_left": session["hints_left"]})
 
@@ -311,4 +430,4 @@ def lose():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

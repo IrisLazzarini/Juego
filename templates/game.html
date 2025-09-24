@@ -92,6 +92,54 @@
                         </div>
                     </div>
                     
+                    {% elif level.type == "caesar" %}
+                    <!-- Nivel de cifrado César -->
+                    <div class="caesar-container">
+                        <div class="encrypted-message">
+                            <h4>🔐 Mensaje Encriptado:</h4>
+                            <div class="cipher-text">{{ level.encrypted_message }}</div>
+                        </div>
+                        
+                        <div class="caesar-tools">
+                            <h4>🛠️ Herramientas de Descifrado</h4>
+                            <p class="tool-instructions">💡 <strong>Instrucciones:</strong> Usa el descifrador César para encontrar el mensaje original. El mensaje fue cifrado con un desplazamiento de 3 posiciones.</p>
+                            
+                            <div class="caesar-decoder">
+                                <h5>🔤 Descifrador César</h5>
+                                <div class="decoder-controls">
+                                    <label for="caesarShift">Desplazamiento:</label>
+                                    <input type="number" id="caesarShift" value="3" min="1" max="25">
+                                    <button type="button" onclick="decryptCaesar()">Descifrar</button>
+                                </div>
+                                <div class="decoder-result">
+                                    <label for="caesarResult">Resultado:</label>
+                                    <input type="text" id="caesarResult" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="caesar-hint">
+                                <p>🎯 <strong>Pista:</strong> Para descifrar, usa un desplazamiento de -3 (o 23) para mover las letras hacia atrás en el alfabeto.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="caesar_answer" aria-label="Ingresa el mensaje descifrado">
+                                🔓 Mensaje Descifrado:
+                            </label>
+                            <input type="text" 
+                                   id="caesar_answer" 
+                                   name="caesar_answer" 
+                                   required 
+                                   autocomplete="off"
+                                   placeholder="Ingresa el mensaje descifrado..."
+                                   style="text-transform: uppercase;"
+                                   aria-describedby="caesar-help">
+                            <div id="caesar-help" class="sr-only">
+                                Ingresa el mensaje descifrado usando el cifrado César
+                            </div>
+                        </div>
+                    </div>
+                    
                     {% elif level.type == "phishing" %}
                     <!-- Nivel de phishing -->
                     <div class="form-group">
@@ -456,6 +504,134 @@
     75% { transform: rotate(5deg); }
 }
 
+/* Estilos para el nivel de cifrado César */
+.caesar-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.encrypted-message {
+    background: linear-gradient(135deg, #1F2937, #374151);
+    border: 2px solid #6B7280;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.encrypted-message h4 {
+    color: #F59E0B;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.cipher-text {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #10B981;
+    letter-spacing: 2px;
+    background: #1F2937;
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid #4B5563;
+    word-break: break-all;
+}
+
+.caesar-tools {
+    background: #1F2937;
+    border: 2px solid #3B82F6;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.caesar-decoder {
+    background: #2D3748;
+    border: 1px solid #4A5568;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.caesar-decoder h5 {
+    color: #3B82F6;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.decoder-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.decoder-controls label {
+    color: #E5E7EB;
+    font-weight: bold;
+}
+
+.decoder-controls input[type="number"] {
+    width: 80px;
+    padding: 0.5rem;
+    background: #374151;
+    border: 1px solid #6B7280;
+    border-radius: 4px;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.decoder-controls button {
+    background: #3B82F6;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+
+.decoder-controls button:hover {
+    background: #2563EB;
+}
+
+.decoder-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.decoder-result label {
+    color: #E5E7EB;
+    font-weight: bold;
+}
+
+.decoder-result input {
+    width: 100%;
+    padding: 0.75rem;
+    background: #374151;
+    border: 1px solid #6B7280;
+    border-radius: 4px;
+    color: #10B981;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.caesar-hint {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    border-left: 4px solid #F59E0B;
+    text-align: center;
+    font-weight: bold;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .tool-grid {
@@ -469,12 +645,22 @@
     .ransom-header {
         font-size: 1.2rem;
     }
+    
+    .decoder-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .cipher-text {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
 }
 </style>
 
 <script>
 // Variables globales
-let timeLeft = parseInt({{ time_left|default(600) }}) || 600;
+let timeLeft = parseInt('{{ time_left|default(600) }}');
 let timerInterval;
 let isGameOver = false;
 
@@ -837,6 +1023,52 @@ function calculateXOR() {
     } catch (error) {
         result.textContent = 'Error: Formato inválido (usa: número^número)';
         result.style.color = '#EF4444';
+    }
+}
+
+// Función para descifrar César
+function decryptCaesar() {
+    const shift = parseInt(document.getElementById('caesarShift').value);
+    const result = document.getElementById('caesarResult');
+    
+    // Obtener el mensaje encriptado del nivel
+    const encryptedMessage = '{{ level.encrypted_message if level.type == "caesar" else "" }}';
+    
+    if (!encryptedMessage) {
+        result.value = 'No hay mensaje encriptado disponible';
+        return;
+    }
+    
+    let decrypted = '';
+    
+    for (let i = 0; i < encryptedMessage.length; i++) {
+        const char = encryptedMessage[i];
+        
+        if (char.match(/[A-Z]/)) {
+            // Para letras mayúsculas
+            const charCode = char.charCodeAt(0);
+            const shifted = ((charCode - 65 - shift + 26) % 26) + 65;
+            decrypted += String.fromCharCode(shifted);
+        } else if (char.match(/[a-z]/)) {
+            // Para letras minúsculas
+            const charCode = char.charCodeAt(0);
+            const shifted = ((charCode - 97 - shift + 26) % 26) + 97;
+            decrypted += String.fromCharCode(shifted);
+        } else {
+            // Mantener espacios y otros caracteres
+            decrypted += char;
+        }
+    }
+    
+    result.value = decrypted;
+    
+    // Verificar si es la respuesta correcta
+    if (decrypted === 'THE SECRET PASSWORD IS CYBERSECURITY') {
+        result.style.borderColor = '#10B981';
+        result.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.3)';
+    } else {
+        result.style.borderColor = '#6B7280';
+        result.style.boxShadow = 'none';
     }
 }
 
